@@ -1,0 +1,1 @@
+Install-ADDSForest -DomainName "laplateforme.io" -DomainMode "WinThreshold" -ForestMode "WinThreshold" -InstallDns:$true -Force:$true
