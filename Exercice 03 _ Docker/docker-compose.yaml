@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # MariaDB service
+  mariadb:
+    image: mariadb:latest
+    container_name: wp_mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress123
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wp_network
+
+  # PHP-FPM service
+  php:
+    image: php:fpm
+    container_name: wp_php
+    restart: always
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - wp_network
+
+  # WordPress service
+  wordpress:
+    image: wordpress:latest
+    container_name: wp_wordpress
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress123
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - wp_network
+
+  # Nginx service
+  nginx:
+    image: nginx:latest
+    container_name: wp_nginx
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - wordpress
+    networks:
+      - wp_network
+
+# Definition of Volumes
+volumes:
+  db_data:
+  wordpress_data:
+
+# Network definition
+networks:
+  wp_network:
+    driver: bridge
